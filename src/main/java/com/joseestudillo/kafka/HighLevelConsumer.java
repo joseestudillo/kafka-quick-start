@@ -1,5 +1,5 @@
 package com.joseestudillo.kafka;
 
-public class Consumer {
+public class HighLevelConsumer {
 
 }
