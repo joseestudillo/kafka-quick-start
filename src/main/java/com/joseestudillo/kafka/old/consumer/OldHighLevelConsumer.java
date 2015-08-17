@@ -4,6 +4,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.log4j.Logger;
 
@@ -16,13 +19,39 @@ import kafka.javaapi.consumer.ConsumerConnector;
 public class OldHighLevelConsumer implements Runnable {
 
 	private static final Logger log = Logger.getLogger(OldHighLevelConsumer.class);
+	private static final AtomicInteger instanceSequencer = new AtomicInteger(0);
 
+	private static class KafkaStreamConsumer implements Runnable {
+
+		private static final Logger log = Logger.getLogger(KafkaStreamConsumer.class);
+
+		KafkaStream<byte[], byte[]> stream;
+
+		public KafkaStreamConsumer(KafkaStream<byte[], byte[]> stream) {
+			this.stream = stream;
+		}
+
+		@Override
+		public void run() {
+			String msg;
+			ConsumerIterator<byte[], byte[]> consumerIte = stream.iterator();
+			while (consumerIte.hasNext()) {
+				msg = new String(consumerIte.next().message());
+				log.info(String.format("Kafka Stream Consumer. Thread Id: %s. Message Consumed: %s", Thread.currentThread().getId(), msg));
+			}
+			log.info(String.format("Kafka Stream Consumer. Thread Id: %s. DONE", Thread.currentThread().getId()));
+		}
+
+	}
+
+	int instanceId;
 	String topic;
 	int threadsPerTopic;
 	ConsumerConnector consumer;
 
 	public OldHighLevelConsumer(String topic, String groupId, int threadsPerTopic, String zookeeper) {
 
+		instanceId = instanceSequencer.getAndIncrement();
 		this.topic = topic;
 		this.threadsPerTopic = threadsPerTopic;
 
@@ -38,7 +67,7 @@ public class OldHighLevelConsumer implements Runnable {
 
 	@Override
 	public void run() {
-		log.info(String.format("Consumer started. Thread Id: %s", Thread.currentThread().getId()));
+		log.info(String.format("Consumer %s started. Thread Id: %s", this.instanceId, Thread.currentThread().getId()));
 		try {
 			Map<String, Integer> topicMap = new HashMap<String, Integer>();
 			topicMap.put(topic, this.threadsPerTopic);
@@ -47,19 +76,15 @@ public class OldHighLevelConsumer implements Runnable {
 			Map<String, List<KafkaStream<byte[], byte[]>>> consumerStreamsMap = consumer.createMessageStreams(topicMap);
 			List<KafkaStream<byte[], byte[]>> streamList = consumerStreamsMap.get(topic);
 
-			//TODO this structure doesn't make any sense, review!!!
+			log.info(String.format("%s streams found for the topic %s", streamList.size(), this.topic));
+			ExecutorService executor = Executors.newFixedThreadPool(this.threadsPerTopic);
 			for (final KafkaStream<byte[], byte[]> stream : streamList) {
-				String msg;
-				ConsumerIterator<byte[], byte[]> consumerIte = stream.iterator();
-				while (consumerIte.hasNext()) {
-					msg = new String(consumerIte.next().message());
-					log.info(String.format("Consumer. Thread Id: %s. Message Consumed: %s", Thread.currentThread().getId(), msg));
-				}
+				executor.submit(new KafkaStreamConsumer(stream));
 			}
 		} catch (Exception e) {
-			log.error(String.format("Consumer. Thread Id: %s. Stopped.", Thread.currentThread().getId()), e);
+			log.error(String.format("Consumer %s. Thread Id: %s. Stopped.", this.instanceId, Thread.currentThread().getId()), e);
 		}
-		log.info(String.format("Consumer. Thread Id: %s. Done.", Thread.currentThread().getId()));
+		log.info(String.format("Consumer %s. Thread Id: %s. Done.", this.instanceId, Thread.currentThread().getId()));
 	}
 
 	public void stop() {

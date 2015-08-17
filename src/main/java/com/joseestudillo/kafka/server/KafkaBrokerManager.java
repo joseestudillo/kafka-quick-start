@@ -1,4 +1,4 @@
-package com.joseestudillo.kafka.old.server;
+package com.joseestudillo.kafka.server;
 
 import java.util.ArrayList;
 import java.util.List;

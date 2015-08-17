@@ -1,32 +1,28 @@
-package com.joseestudillo.kafka.old.producer;
+package com.joseestudillo.kafka.producer;
 
 import java.util.Properties;
 
+import org.apache.kafka.clients.producer.KafkaProducer;
+import org.apache.kafka.clients.producer.ProducerRecord;
+import org.apache.kafka.common.serialization.StringSerializer;
 import org.apache.log4j.Logger;
 
-import kafka.javaapi.producer.Producer;
-import kafka.producer.KeyedMessage;
-import kafka.producer.ProducerConfig;
+public class Producer implements Runnable {
 
-public class OldProducer implements Runnable {
-
-	private static Logger log = Logger.getLogger(OldProducer.class);
+	private static Logger log = Logger.getLogger(Producer.class);
 
 	private static final Properties BASE_PROPS = new Properties();
 
-	static {
-		BASE_PROPS.put("serializer.class", "kafka.serializer.StringEncoder");
-		BASE_PROPS.put("request.required.acks", "1");
-	}
+	static {}
 
 	private String topic;
-	Producer<String, String> producer;
+	KafkaProducer<String, String> producer;
 
-	public OldProducer(String topic) {
+	public Producer(String topic) {
 		this.topic = topic;
 	}
 
-	public OldProducer(String brokerCSV, String topic) {
+	public Producer(String brokerCSV, String topic) {
 		this(topic);
 		this.initializeProducer(generateProperties(brokerCSV));
 	}
@@ -34,13 +30,16 @@ public class OldProducer implements Runnable {
 	protected Properties generateProperties(String brokerCSV) {
 		Properties properties = new Properties();
 		properties.putAll(BASE_PROPS);
-		properties.put("metadata.broker.list", brokerCSV);
+		properties.put("bootstrap.servers", brokerCSV);
+		//the serializers are mandatory in the new implementation
+		properties.put("key.serializer", StringSerializer.class.getCanonicalName());
+		properties.put("value.serializer", StringSerializer.class.getCanonicalName());
+
 		return properties;
 	}
 
 	protected void initializeProducer(Properties properties) {
-		ProducerConfig config = new ProducerConfig(properties);
-		producer = new Producer<String, String>(config);
+		producer = new KafkaProducer<String, String>(properties);
 	}
 
 	@Override
@@ -51,7 +50,7 @@ public class OldProducer implements Runnable {
 			String msg;
 			while (!Thread.interrupted()) {
 				msg = String.format("Sequence message: %s", sequence++);
-				KeyedMessage<String, String> keyedMessage = new KeyedMessage<String, String>(topic, msg);
+				ProducerRecord<String, String> keyedMessage = new ProducerRecord<String, String>(topic, msg);
 				producer.send(keyedMessage);
 				log.info(String.format("Producer. Thread Id: %s. Sent: %s", Thread.currentThread().getId(), msg));
 				Thread.sleep(1000);

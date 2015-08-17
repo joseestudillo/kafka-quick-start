@@ -1,4 +1,4 @@
-package com.joseestudillo.kafka.old.server;
+package com.joseestudillo.kafka.server;
 
 import java.io.IOException;
 import java.util.ArrayList;

@@ -12,30 +12,25 @@ import com.joseestudillo.kafka.old.consumer.OldHighLevelConsumer;
 import com.joseestudillo.kafka.old.producer.OldProducer;
 import com.joseestudillo.kafka.utils.KafkaUtils;
 
-public class LauncherOldPartitionedProducerConsumer {
+public class LauncherMultiOldProducerConsumer {
 
-	private static final Logger log = Logger.getLogger(LauncherOldPartitionedProducerConsumer.class);
-
-	//TODO understand how affect increasing the number of threads per topic
-	//TODO understand how partitioning works
+	private static final Logger log = Logger.getLogger(LauncherMultiOldProducerConsumer.class);
 
 	public static void main(String[] args) throws InterruptedException, IOException {
-		String topic = "partitioned-kafka-topic";
+		String topic = "multi-kafka-topic";
 		String zookeeper = "localhost:2181";
 		String groupId = "groupId";
 		int nBrokers = 4;
-		int nPartitions = 5;
 		int nProducers = 2;
 		int nConsumers = 2;
-		int threadsPerConsumer = 1;
+		int threadsPerConsumer = 2;
 		Properties zooKeeperDefaultConfig = KafkaUtils.loadPropertyFileFromClassPath("/config/zookeeper.properties");
 		zooKeeperDefaultConfig.setProperty("host.name", "localhost");
 		Properties brokerDefaultConfig = KafkaUtils.loadPropertyFileFromClassPath("/config/server.properties");
-		brokerDefaultConfig.setProperty("num.partitions", String.valueOf(nPartitions));
-		brokerDefaultConfig.setProperty("host", "localhost");
 
 		//ServerStarter server = new ServerStarter(zooKeeperDefaultConfig, brokerDefaultConfig, nBrokers);
 		//server.start();
+
 		String brokersCSV = "localhost:9090,localhost:9091,localhost:9092";//server.getBrokerCSV();
 
 		Thread.sleep(4000); //wait for the server to be ready
@@ -48,7 +43,8 @@ public class LauncherOldPartitionedProducerConsumer {
 
 		List<OldHighLevelConsumer> consumers = new ArrayList<>();
 		for (int i = 0; i < nConsumers; i++) {
-			consumers.add(new OldHighLevelConsumer(topic, groupId, threadsPerConsumer, zookeeper));
+			//Notice that if the group Id remains constant, only one of the consumers will get the message
+			consumers.add(new OldHighLevelConsumer(topic, groupId + i, threadsPerConsumer, zookeeper));
 		}
 
 		log.info(String.format("STARTING ALL producers: %s consumers: %s", producers.size(), consumers.size()));
