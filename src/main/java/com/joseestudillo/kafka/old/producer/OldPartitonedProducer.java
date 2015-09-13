@@ -41,9 +41,8 @@ public class OldPartitonedProducer implements Runnable {
 		properties.putAll(BASE_PROPS);
 		properties.put("metadata.broker.list", brokerCSV);
 		//This is the only difference with a regular producer in terms of configurations
-		//TODO I'm hacing problems instantiating this class when the producers are launched
+		//TODO I'm having problems instantiating this class when the producers are launched
 		properties.put("partitioner.class", this.partitionerClass);
-
 		return properties;
 	}
 

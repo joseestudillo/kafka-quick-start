@@ -20,6 +20,7 @@ public class LauncherMultiPartitionedProducerConsumer {
 	//TODO understand how affect increasing the number of threads per topic
 	//TODO understand how partitioning works
 
+	@SuppressWarnings(value = "all")
 	public static void main(String[] args) throws InterruptedException, IOException {
 		String topic = "partitioned-topic-0";
 		String zookeeperURL = "localhost:2181";
