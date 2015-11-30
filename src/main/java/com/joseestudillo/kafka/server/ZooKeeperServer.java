@@ -9,12 +9,22 @@ import org.apache.zookeeper.server.ServerConfig;
 import org.apache.zookeeper.server.ZooKeeperServerMain;
 import org.apache.zookeeper.server.quorum.QuorumPeerConfig;
 
+/**
+ * Runs a Zookeeper server programmatically.
+ * 
+ * @author Jose Estudillo
+ *
+ */
 public class ZooKeeperServer {
 
 	public static final Logger log = Logger.getLogger(ZooKeeperServer.class);
 
 	QuorumPeerConfig quorumPeerConfiguration;
 	ZooKeeperServerMain zooKeeperServer;
+
+	public static void getClient() {
+
+	}
 
 	public ZooKeeperServer(Properties zkProperties) throws FileNotFoundException, IOException {
 		quorumPeerConfiguration = new QuorumPeerConfig();

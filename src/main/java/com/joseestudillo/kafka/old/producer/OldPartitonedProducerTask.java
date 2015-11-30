@@ -8,9 +8,16 @@ import kafka.javaapi.producer.Producer;
 import kafka.producer.KeyedMessage;
 import kafka.producer.ProducerConfig;
 
-public class OldProducer implements Runnable {
+/**
+ * Implementation of a producer with partitioning
+ * 
+ * @author Jose Estudillo
+ *
+ */
 
-	private static Logger log = Logger.getLogger(OldProducer.class);
+public class OldPartitonedProducerTask implements Runnable {
+
+	private static Logger log = Logger.getLogger(OldPartitonedProducerTask.class);
 
 	private static final Properties BASE_PROPS = new Properties();
 
@@ -20,27 +27,28 @@ public class OldProducer implements Runnable {
 	}
 
 	private String topic;
-	Producer<String, String> producer;
+	Producer<Integer, String> producer;
+	private String partitionerClass;
 
-	public OldProducer(String topic) {
+	public OldPartitonedProducerTask(String brokerCSV, String topic, Class<? extends kafka.producer.Partitioner> partitionerClass) {
 		this.topic = topic;
-	}
-
-	public OldProducer(String brokerCSV, String topic) {
-		this(topic);
-		this.initializeProducer(generateProperties(brokerCSV));
+		this.partitionerClass = partitionerClass.getCanonicalName();
+		this.initializeProducer(this.generateProperties(brokerCSV));
 	}
 
 	protected Properties generateProperties(String brokerCSV) {
 		Properties properties = new Properties();
 		properties.putAll(BASE_PROPS);
 		properties.put("metadata.broker.list", brokerCSV);
+		//This is the only difference with a regular producer in terms of configurations
+		//TODO I'm having problems instantiating this class when the producers are launched
+		properties.put("partitioner.class", this.partitionerClass);
 		return properties;
 	}
 
 	protected void initializeProducer(Properties properties) {
 		ProducerConfig config = new ProducerConfig(properties);
-		producer = new Producer<String, String>(config);
+		producer = new Producer<Integer, String>(config);
 	}
 
 	@Override
@@ -51,7 +59,8 @@ public class OldProducer implements Runnable {
 			String msg;
 			while (!Thread.interrupted()) {
 				msg = String.format("Sequence message: %s", sequence++);
-				KeyedMessage<String, String> keyedMessage = new KeyedMessage<String, String>(topic, msg);
+				//for this case we will use the sequence as a message key
+				KeyedMessage<Integer, String> keyedMessage = new KeyedMessage<Integer, String>(topic, sequence, msg);
 				producer.send(keyedMessage);
 				log.info(String.format("Producer. Thread Id: %s. Sent: %s", Thread.currentThread().getId(), msg));
 				Thread.sleep(1000);

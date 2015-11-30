@@ -37,7 +37,21 @@ export PATH=$PATH:$KAFKA_HOME/bin
 
 Where `current` points to the actual version of Kafka.
 
-## Running Kafka from CLI
+## Running Kafka
+
+### Troubleshotting
+
+- _Broker already registered_:
+
+```
+java.lang.RuntimeException: A broker is already registered on the path /brokers/ids/0. This probably indicates that you either have configured a brokerid that is already in use, or else you have shutdown this broker and restarted it faster than the zookeeper timeout so it appears to be re-registering.
+```
+
+Delete the temporary zookeeper folder. For zookeeper is defined in the property `dataDir=/tmp/zookeeper`.
+
+### Network configuration
+
+### CLI
 
 To run Kafka you will need Zookepeer required by the Kafka server. The Script `resources/scripts/local/start-zookeeper-server.sh` can run a local zookepeer.
 
@@ -69,8 +83,8 @@ Topic:rt0	PartitionCount:3	ReplicationFactor:3	Configs:
 	Topic: rt0	Partition: 2	Leader: 1	Replicas: 1,2,0	Isr: 1,2,0
 ```
 
-## Running Kafka from Java
+### Java
 
-## Running Kafka in Hortonworks
+### Hortonworks
 
 ## Code Examples

@@ -16,9 +16,9 @@ import kafka.consumer.ConsumerIterator;
 import kafka.consumer.KafkaStream;
 import kafka.javaapi.consumer.ConsumerConnector;
 
-public class OldHighLevelConsumer implements Runnable {
+public class OldHighLevelConsumerTask implements Runnable {
 
-	private static final Logger log = Logger.getLogger(OldHighLevelConsumer.class);
+	private static final Logger log = Logger.getLogger(OldHighLevelConsumerTask.class);
 	private static final AtomicInteger instanceSequencer = new AtomicInteger(0);
 
 	private static class KafkaStreamConsumer implements Runnable {
@@ -33,13 +33,14 @@ public class OldHighLevelConsumer implements Runnable {
 
 		@Override
 		public void run() {
+			log.info(String.format("Kafka Stream Consumer. Thread Id: %s. Started.", Thread.currentThread().getId()));
 			String msg;
 			ConsumerIterator<byte[], byte[]> consumerIte = stream.iterator();
 			while (consumerIte.hasNext()) {
 				msg = new String(consumerIte.next().message());
 				log.info(String.format("Kafka Stream Consumer. Thread Id: %s. Message Consumed: %s", Thread.currentThread().getId(), msg));
 			}
-			log.info(String.format("Kafka Stream Consumer. Thread Id: %s. DONE", Thread.currentThread().getId()));
+			log.info(String.format("Kafka Stream Consumer. Thread Id: %s. DONE.", Thread.currentThread().getId()));
 		}
 
 	}
@@ -49,7 +50,7 @@ public class OldHighLevelConsumer implements Runnable {
 	int threadsPerTopic;
 	ConsumerConnector consumer;
 
-	public OldHighLevelConsumer(String topic, String groupId, int threadsPerTopic, String zookeeper) {
+	public OldHighLevelConsumerTask(String topic, String groupId, int threadsPerTopic, String zookeeper) {
 
 		instanceId = instanceSequencer.getAndIncrement();
 		this.topic = topic;
@@ -58,6 +59,7 @@ public class OldHighLevelConsumer implements Runnable {
 		Properties props = new Properties();
 		props.put("zookeeper.connect", zookeeper);
 		props.put("group.id", groupId);
+		props.put("client.id", String.valueOf(System.currentTimeMillis()));
 		props.put("zookeeper.session.timeout.ms", "500");
 		props.put("zookeeper.sync.time.ms", "250");
 		props.put("auto.commit.interval.ms", "1000");

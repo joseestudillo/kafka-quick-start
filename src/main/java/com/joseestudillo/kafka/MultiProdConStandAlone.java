@@ -1,4 +1,4 @@
-package com.joseestudillo.kafka.old;
+package com.joseestudillo.kafka;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -8,16 +8,16 @@ import java.util.Properties;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
-import com.joseestudillo.kafka.old.consumer.OldHighLevelConsumer;
-import com.joseestudillo.kafka.old.producer.OldProducer;
+import com.joseestudillo.kafka.old.consumer.OldHighLevelConsumerTask;
+import com.joseestudillo.kafka.producer.NewProducerTask;
 import com.joseestudillo.kafka.utils.KafkaUtils;
 
-public class LauncherMultiOldProducerConsumer {
+public class MultiProdConStandAlone {
 
-	private static final Logger log = Logger.getLogger(LauncherMultiOldProducerConsumer.class);
+	private static final Logger log = Logger.getLogger(MultiProdConStandAlone.class);
 
 	public static void main(String[] args) throws InterruptedException, IOException {
-		String topic = "multi-kafka-topic";
+		String topic = "new-multi-kafka-topic";
 		String zookeeper = "localhost:2181";
 		String groupId = "groupId";
 		int nBrokers = 4;
@@ -36,22 +36,22 @@ public class LauncherMultiOldProducerConsumer {
 		Thread.sleep(4000); //wait for the server to be ready
 
 		log.info("------------------------CREATING ALL");
-		List<OldProducer> producers = new ArrayList<>();
+		List<NewProducerTask> producers = new ArrayList<>();
 		for (int i = 0; i < nProducers; i++) {
-			producers.add(new OldProducer(brokersCSV, topic));
+			producers.add(new NewProducerTask(brokersCSV, topic));
 		}
 
-		List<OldHighLevelConsumer> consumers = new ArrayList<>();
+		List<OldHighLevelConsumerTask> consumers = new ArrayList<>();
 		for (int i = 0; i < nConsumers; i++) {
 			//Notice that if the group Id remains constant, only one of the consumers will get the message
-			consumers.add(new OldHighLevelConsumer(topic, groupId + i, threadsPerConsumer, zookeeper));
+			consumers.add(new OldHighLevelConsumerTask(topic, groupId + i, threadsPerConsumer, zookeeper));
 		}
 
 		log.info(String.format("STARTING ALL producers: %s consumers: %s", producers.size(), consumers.size()));
-		for (OldProducer producer : producers) {
+		for (NewProducerTask producer : producers) {
 			new Thread(producer).start();
 		}
-		for (OldHighLevelConsumer consumer : consumers) {
+		for (OldHighLevelConsumerTask consumer : consumers) {
 			new Thread(consumer).start();
 		}
 
@@ -59,10 +59,10 @@ public class LauncherMultiOldProducerConsumer {
 
 		log.info("STOPPING ALL");
 		Logger.getRootLogger().setLevel(Level.ERROR);
-		for (OldProducer producer : producers) {
+		for (NewProducerTask producer : producers) {
 			producer.stop();
 		}
-		for (OldHighLevelConsumer consumer : consumers) {
+		for (OldHighLevelConsumerTask consumer : consumers) {
 			consumer.stop();
 		}
 

@@ -29,7 +29,7 @@ public class CustomPartitioner implements Partitioner {
 		return result;
 	}
 
-	//method added to cover the case of the new implementation where the producer must say the partition in advance
+	//method added to cover the case of the new implementation where the producer must define the partition in advance
 	public Integer partition(Object key) {
 		int result = key.hashCode() % this.nPartitions;
 		log.info(String.format("partition(%s, %s) -> %s", key, this.nPartitions, result));

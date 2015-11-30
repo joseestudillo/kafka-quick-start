@@ -16,9 +16,9 @@ import com.joseestudillo.kafka.old.partitioner.CustomPartitioner;
  *
  */
 
-public class PartitionedProducer implements Runnable {
+public class NewPartitionedProducerTask implements Runnable {
 
-	private static Logger log = Logger.getLogger(PartitionedProducer.class);
+	private static Logger log = Logger.getLogger(NewPartitionedProducerTask.class);
 
 	private static final Properties BASE_PROPS = new Properties();
 
@@ -28,7 +28,7 @@ public class PartitionedProducer implements Runnable {
 	KafkaProducer<String, String> producer;
 	private CustomPartitioner partitioner = null;
 
-	public PartitionedProducer(String brokerCSV, String topic, CustomPartitioner partitioner) {
+	public NewPartitionedProducerTask(String brokerCSV, String topic, CustomPartitioner partitioner) {
 		this.topic = topic;
 		this.partitioner = partitioner;
 		this.initializeProducer(this.generateProperties(brokerCSV));

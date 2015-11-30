@@ -7,29 +7,20 @@ import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.apache.log4j.Logger;
 
-public class Producer implements Runnable {
+public class NewProducerTask implements Runnable {
 
-	private static Logger log = Logger.getLogger(Producer.class);
-
-	private static final Properties BASE_PROPS = new Properties();
-
-	static {}
+	private static Logger log = Logger.getLogger(NewProducerTask.class);
 
 	private String topic;
 	KafkaProducer<String, String> producer;
 
-	public Producer(String topic) {
+	public NewProducerTask(String brokerCSV, String topic) {
 		this.topic = topic;
-	}
-
-	public Producer(String brokerCSV, String topic) {
-		this(topic);
 		this.initializeProducer(generateProperties(brokerCSV));
 	}
 
 	protected Properties generateProperties(String brokerCSV) {
 		Properties properties = new Properties();
-		properties.putAll(BASE_PROPS);
 		properties.put("bootstrap.servers", brokerCSV);
 		//the serializers are mandatory in the new implementation
 		properties.put("key.serializer", StringSerializer.class.getCanonicalName());

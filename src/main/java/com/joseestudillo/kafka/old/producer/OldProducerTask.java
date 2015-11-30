@@ -8,16 +8,9 @@ import kafka.javaapi.producer.Producer;
 import kafka.producer.KeyedMessage;
 import kafka.producer.ProducerConfig;
 
-/**
- * Implementation of a producer with partitioning
- * 
- * @author Jose Estudillo
- *
- */
+public class OldProducerTask implements Runnable {
 
-public class OldPartitonedProducer implements Runnable {
-
-	private static Logger log = Logger.getLogger(OldPartitonedProducer.class);
+	private static Logger log = Logger.getLogger(OldProducerTask.class);
 
 	private static final Properties BASE_PROPS = new Properties();
 
@@ -27,28 +20,34 @@ public class OldPartitonedProducer implements Runnable {
 	}
 
 	private String topic;
-	Producer<Integer, String> producer;
-	private String partitionerClass;
+	Producer<String, String> producer;
 
-	public OldPartitonedProducer(String brokerCSV, String topic, Class<? extends kafka.producer.Partitioner> partitionerClass) {
+	public OldProducerTask(String topic) {
 		this.topic = topic;
-		this.partitionerClass = partitionerClass.getCanonicalName();
-		this.initializeProducer(this.generateProperties(brokerCSV));
 	}
 
-	protected Properties generateProperties(String brokerCSV) {
+	public OldProducerTask(String brokerCSV, String topic) {
+		this(brokerCSV, topic, false);
+	}
+
+	public OldProducerTask(String brokerCSV, String topic, boolean autocreateTopic) {
+		this(topic);
+		this.initializeProducer(generateProperties(brokerCSV, autocreateTopic));
+	}
+
+	protected Properties generateProperties(String brokerCSV, boolean autocreateTopic) {
 		Properties properties = new Properties();
 		properties.putAll(BASE_PROPS);
 		properties.put("metadata.broker.list", brokerCSV);
-		//This is the only difference with a regular producer in terms of configurations
-		//TODO I'm having problems instantiating this class when the producers are launched
-		properties.put("partitioner.class", this.partitionerClass);
+		if (autocreateTopic) {
+			properties.put("auto.create.topics.enable", "true");
+		}
 		return properties;
 	}
 
 	protected void initializeProducer(Properties properties) {
 		ProducerConfig config = new ProducerConfig(properties);
-		producer = new Producer<Integer, String>(config);
+		producer = new Producer<String, String>(config);
 	}
 
 	@Override
@@ -58,12 +57,11 @@ public class OldPartitonedProducer implements Runnable {
 		try {
 			String msg;
 			while (!Thread.interrupted()) {
-				msg = String.format("Sequence message: %s", sequence++);
-				//for this case we will use the sequence as a message key
-				KeyedMessage<Integer, String> keyedMessage = new KeyedMessage<Integer, String>(topic, sequence, msg);
+				msg = String.format("Sequence message: %s %s", sequence++, System.currentTimeMillis());
+				KeyedMessage<String, String> keyedMessage = new KeyedMessage<String, String>(topic, msg);
 				producer.send(keyedMessage);
 				log.info(String.format("Producer. Thread Id: %s. Sent: %s", Thread.currentThread().getId(), msg));
-				Thread.sleep(1000);
+				Thread.sleep(500);
 			}
 		} catch (Exception e) {
 			log.error("Producer Stopped: ", e);

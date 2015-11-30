@@ -9,6 +9,12 @@ import org.apache.log4j.Logger;
 import kafka.server.KafkaConfig;
 import kafka.server.KafkaServerStartable;
 
+/**
+ * This class manage Brokers programatically, allowing to create, launch and stop them.
+ * 
+ * @author Jose Estudillo
+ *
+ */
 public class KafkaBrokerManager {
 
 	private static final Logger log = Logger.getLogger(KafkaBrokerManager.class);
@@ -16,7 +22,7 @@ public class KafkaBrokerManager {
 	private List<KafkaServerStartable> brokers;
 
 	public KafkaBrokerManager() {
-		brokers = new ArrayList<KafkaServerStartable>();
+		this.brokers = new ArrayList<KafkaServerStartable>();
 	}
 
 	public void addAndStart(Properties brokerConfig) {
@@ -57,7 +63,7 @@ public class KafkaBrokerManager {
 		List<String> hosts = new ArrayList<>();
 		for (KafkaServerStartable broker : this.brokers) {
 			String hostname = broker.serverConfig().hostName();
-			if (hostname == null) {
+			if (hostname == null || hostname.isEmpty()) {
 				hostname = "localhost";
 			}
 			hosts.add(String.format("%s:%s", hostname, broker.serverConfig().port()));
@@ -66,7 +72,7 @@ public class KafkaBrokerManager {
 	}
 
 	public String getBrokerHostCSV() {
-		return String.join(",", getBrokerHostList());
+		return String.join(",", this.getBrokerHostList());
 	}
 
 }
