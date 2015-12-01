@@ -30,8 +30,6 @@ public class MultiProdConStandAlone {
 		server.start();
 		String brokersCSV = server.getBrokerCSV();
 
-		Thread.sleep(4000); //wait for the server to be ready
-
 		log.info(String.format("Generating %s Producer(s)", nConsumers));
 		List<NewProducerTask> producers = new ArrayList<>();
 		for (int i = 0; i < nProducers; i++) {

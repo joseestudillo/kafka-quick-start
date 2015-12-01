@@ -35,7 +35,7 @@ export KAFKA_HOME=/usr/local/apache/kafka/current
 export PATH=$PATH:$KAFKA_HOME/bin
 ```
 
-Where `current` points to the actual version of Kafka.
+Where `current` is a symb link that points to the actual version of Kafka.
 
 ## Running Kafka
 

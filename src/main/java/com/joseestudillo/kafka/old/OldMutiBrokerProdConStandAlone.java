@@ -30,22 +30,12 @@ public class OldMutiBrokerProdConStandAlone {
 		int nProducers = 2;
 		int nConsumers = 2;
 		int threadsPerConsumer = 2;
-		boolean partitionedTopic = false;
 
 		Properties zooKeeperDefaultConfig = KafkaUtils.loadPropertyFileFromClassPath("/config/zookeeper.properties");
 		Properties brokerDefaultConfig = KafkaUtils.loadPropertyFileFromClassPath("/config/server.properties");
 		KafkaServer server = new KafkaServer(zooKeeperDefaultConfig, brokerDefaultConfig, nBrokers);
 		server.start();
 		String brokersCSV = server.getBrokerCSV();
-
-		if (partitionedTopic) {
-			topic = "partitioned-kafka-topic-" + System.currentTimeMillis(); //trick to avoid problems with the deletion
-			log.info(String.format("Generating Partitioned topic: %s", topic));
-			int nPartitions = 5;
-			int replicationFactor = 2; //It cant be bigger than the number of brokers.
-			KafkaUtils.createTopic(zookeeper, topic, nPartitions, replicationFactor);
-			log.info(String.format("Partitioned topic: %s Generated", topic));
-		}
 
 		log.info(String.format("Generating %s producer(s)", nProducers));
 		List<OldProducerTask> producers = new ArrayList<>();
