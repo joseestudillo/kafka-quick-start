@@ -31,7 +31,7 @@ public class NewConsumerTask implements Runnable {
 		//properties.put("enable.auto.commit", "false");
 		//properties.put("auto.commit.interval.ms", "1000");
 		//properties.put("session.timeout.ms", "30000");
-		//the serializers are mandatory in the new implementation
+		//the deserializers are mandatory in the new implementation
 		properties.put("key.deserializer", StringDeserializer.class.getCanonicalName());
 		properties.put("value.deserializer", StringDeserializer.class.getCanonicalName());
 
@@ -49,7 +49,11 @@ public class NewConsumerTask implements Runnable {
 			while (!closed.get()) {
 				ConsumerRecords<String, String> records = consumer.poll(10000);
 				for (ConsumerRecord<String, String> record : records) {
-					log.info(String.format("offset = %d, key = %s, value = %s", record.offset(), record.key(), record.value()));
+					log.info(String.format("Consumer Thread Id: %s. Message Consumed. offset = %d, key = %s, value = %s",
+							Thread.currentThread().getId(),
+							record.offset(),
+							record.key(),
+							record.value()));
 				}
 			}
 		} catch (WakeupException e) {
@@ -62,7 +66,6 @@ public class NewConsumerTask implements Runnable {
 		}
 	}
 
-	// Shutdown hook which can be called from a separate thread
 	public void shutdown() {
 		log.info(String.format("Shutting down consumer Task Id: %s", Thread.currentThread().getId()));
 		closed.set(true);

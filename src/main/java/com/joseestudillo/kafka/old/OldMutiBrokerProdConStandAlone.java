@@ -18,9 +18,9 @@ import com.joseestudillo.kafka.utils.KafkaUtils;
  * @author jo186021
  *
  */
-public class RunMutiBrokerProdConStandAlone {
+public class OldMutiBrokerProdConStandAlone {
 
-	private static final Logger log = Logger.getLogger(RunMutiBrokerProdConStandAlone.class);
+	private static final Logger log = Logger.getLogger(OldMutiBrokerProdConStandAlone.class);
 
 	public static void main(String[] args) throws InterruptedException, IOException {
 		String topic = "multi-kafka-topic";
@@ -53,6 +53,7 @@ public class RunMutiBrokerProdConStandAlone {
 			producers.add(new OldProducerTask(brokersCSV, topic));
 		}
 
+		log.info(String.format("Generating %s Consumers(s)", nConsumers));
 		List<OldHighLevelConsumerTask> consumers = new ArrayList<>();
 		for (int i = 0; i < nConsumers; i++) {
 			//Notice that if the group Id remains constant, only one of the consumers in the group will get the message.

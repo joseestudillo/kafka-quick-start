@@ -14,7 +14,7 @@ import com.joseestudillo.kafka.utils.KafkaUtils;
  * @author Jose Estudillo
  *
  */
-public class RunProdConStandAlone {
+public class OldProdConStandAlone {
 	public static void main(String[] args) throws InterruptedException, IOException {
 		String topic = "kafka-topic";
 		String zookeeper = "localhost:2181";

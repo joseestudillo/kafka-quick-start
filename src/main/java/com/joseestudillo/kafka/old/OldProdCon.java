@@ -11,7 +11,7 @@ import com.joseestudillo.kafka.old.producer.OldProducerTask;
  * @author jo186021
  *
  */
-public class RunProdCon {
+public class OldProdCon {
 	public static void main(String[] args) throws InterruptedException, IOException {
 		String zookeeper = args.length > 0 ? args[0] : "localhost:2181";
 		String brokersCSV = args.length > 1 ? args[1] : "localhost:9092";
