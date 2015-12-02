@@ -19,21 +19,22 @@ import com.joseestudillo.kafka.producer.NewProducerTask;
  * 
  * Notice that the partitioned topic must be created in advance and the brokers are harcoded.
  * 
- * @author jo186021
+ * @author Jose Estudillo
  *
  */
 public class ProdConPartitionedTopic {
 
 	public static void main(String[] args) throws InterruptedException, IOException {
-		String topic = "partitioned-topic";
-		String groupId = "groupId";
-		String brokersCSV = "localhost:9092,localhost:9093,localhost:9094";
+
+		String topic = args.length > 0 ? args[0] : "partitioned-topic";
+		String brokerCSV = args.length > 1 ? args[1] : "localhost:9092,localhost:9093,localhost:9094";
+		String groupId = args.length > 2 ? args[2] : "groupId";
 
 		int nProducers = 1;
 		int nConsumers = 3;
 
-		List<KafkaProducer<String, String>> producers = NewProducerFactory.newInstances(brokersCSV, nProducers, NewPartitioner.class);
-		List<KafkaConsumer<String, String>> consumers = NewConsumerFactory.newInstances(brokersCSV, groupId, topic, nConsumers, false);
+		List<KafkaProducer<String, String>> producers = NewProducerFactory.newInstances(brokerCSV, nProducers, NewPartitioner.class);
+		List<KafkaConsumer<String, String>> consumers = NewConsumerFactory.newInstances(brokerCSV, groupId, topic, nConsumers, false);
 		ExecutorService executor = Executors.newFixedThreadPool(nConsumers + nProducers);
 
 		for (KafkaProducer<String, String> producer : producers) {

@@ -8,7 +8,7 @@ import com.joseestudillo.kafka.old.producer.OldProducerTask;
 /**
  * Launch 1 kafka producer and 1 kafka consumer. This class expect a running zookeeper server and at least one broker.
  * 
- * @author jo186021
+ * @author Jose Estudillo
  *
  */
 public class OldProdCon {
@@ -16,9 +16,10 @@ public class OldProdCon {
 		String zookeeper = args.length > 0 ? args[0] : "localhost:2181";
 		String brokersCSV = args.length > 1 ? args[1] : "localhost:9092";
 		String topic = args.length > 2 ? args[2] : "kafka-topic";
+		String groupId = args.length > 3 ? args[3] : "groupId";
 
 		OldProducerTask producer = new OldProducerTask(brokersCSV, topic, true);
-		OldHighLevelConsumerTask consumer = new OldHighLevelConsumerTask(topic, "groupId", 1, zookeeper);
+		OldHighLevelConsumerTask consumer = new OldHighLevelConsumerTask(topic, groupId, 1, zookeeper);
 
 		new Thread(producer).start();
 		Thread.sleep(1000);

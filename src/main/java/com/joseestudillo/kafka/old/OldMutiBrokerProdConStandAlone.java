@@ -15,7 +15,7 @@ import com.joseestudillo.kafka.utils.KafkaUtils;
 /**
  * Class to illustrate the use of several producers/consumer and the use of groups.
  * 
- * @author jo186021
+ * @author Jose Estudillo
  *
  */
 public class OldMutiBrokerProdConStandAlone {
