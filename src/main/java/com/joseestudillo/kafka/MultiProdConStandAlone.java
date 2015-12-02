@@ -8,7 +8,9 @@ import java.util.Properties;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
+import com.joseestudillo.kafka.consumer.NewConsumerFactory;
 import com.joseestudillo.kafka.consumer.NewConsumerTask;
+import com.joseestudillo.kafka.producer.NewProducerFactory;
 import com.joseestudillo.kafka.producer.NewProducerTask;
 import com.joseestudillo.kafka.server.KafkaServer;
 import com.joseestudillo.kafka.utils.KafkaUtils;
@@ -33,14 +35,14 @@ public class MultiProdConStandAlone {
 		log.info(String.format("Generating %s Producer(s)", nConsumers));
 		List<NewProducerTask> producers = new ArrayList<>();
 		for (int i = 0; i < nProducers; i++) {
-			producers.add(new NewProducerTask(brokersCSV, topic));
+			producers.add(new NewProducerTask(NewProducerFactory.newInstance(brokersCSV), topic));
 		}
 
 		log.info(String.format("Generating %s Consumers(s)", nConsumers));
 		List<NewConsumerTask> consumers = new ArrayList<>();
 		for (int i = 0; i < nConsumers; i++) {
 			//Notice that if the group Id remains constant, only one of the consumers will get the message
-			consumers.add(new NewConsumerTask(brokersCSV, groupId + i, topic));
+			consumers.add(new NewConsumerTask(NewConsumerFactory.newInstance(brokersCSV, groupId + i, topic)));
 		}
 
 		log.info(String.format("Starting all producers: %s consumers: %s", producers.size(), consumers.size()));

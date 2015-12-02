@@ -12,6 +12,8 @@
 
 The partitions in the log serve several purposes. First, they allow the log to scale beyond a size that will fit on a single server. Each individual partition must fit on the servers that host it, but a topic may have many partitions so it can handle an arbitrary amount of data. Second they act as the unit of parallelism.
 
+In a group of consumers, each partition is only consumed of only one consumer. So if there are more consumers than partitions, these will be idle.
+
 - _Consumers_: Messaging traditionally has two models: 
   - _queuing_: a pool of consumers may read from a server and each message goes to one of them.
   - _publish-subscribe_: the message is broadcast to all consumers.
@@ -37,9 +39,8 @@ export PATH=$PATH:$KAFKA_HOME/bin
 
 Where `current` is a symb link that points to the actual version of Kafka.
 
-## Running Kafka
 
-### Troubleshotting
+## Troubleshotting
 
 - _Broker already registered_:
 
@@ -49,9 +50,9 @@ java.lang.RuntimeException: A broker is already registered on the path /brokers/
 
 Delete the temporary zookeeper folder. For zookeeper is defined in the property `dataDir=/tmp/zookeeper`.
 
-### Network configuration
+## Network configuration
 
-### CLI
+## CLI
 
 To run Kafka you will need Zookepeer required by the Kafka server. The Script `resources/scripts/local/start-zookeeper-server.sh` can run a local zookepeer.
 
@@ -60,7 +61,7 @@ Once the Zookeeper is up, you need to register broker(s) on it. This can be done
 - `resources/scripts/local/start-single-broker.sh`
 - `resources/scripts/local/start-multi-broker.sh`
 
-In the case of multiple brokers, one of them will be elected as a leader automatically. The brokers are started based on a configuration defined on a property files. By default kafka includes one in `$KAFKA_HOME/config/server.properties` to be able to create multiple in a single machine I have also added other configurations under `resources/configs`, basically changing the port and adding explanation for the main parameters. These brokers, are basically the Kafka servers.
+In the case of multiple brokers, one of them will be elected as a leader automatically. The brokers are started based on a configuration defined on a property files. By default kafka includes one in `$KAFKA_HOME/config/server.properties` to be able to create multiple in a single machine I have also added other configurations under `resources/configs/broker-x-server.properties`, basically changing the port and adding an explanation for the main parameters. These brokers, are basically the Kafka servers.
 
 The next step is creating a topic. To create a topic you need a name for it, the number of partitions and the replication factor for them. Also for every topic you will need the list of Zookeeper host and the list of brokers. There is a command to create topics that works as follows:
 
@@ -68,7 +69,7 @@ The next step is creating a topic. To create a topic you need a name for it, the
 kafka-topics.sh --create --zookeeper $ZOOKEEPER_HOST_LIST --replication-factor $REPLICATION_FACTOR --partitions $N_PARTITIONS --topic $TOPIC
 ```
 
-The scripts `scripts/create-topic.sh` or `scripts/create-replicated-topic.sh` will do this automatically.
+The scripts `scripts/create-topic.sh` or `scripts/create-replicated-topic.sh` will do this automatically. Notice that if you don't require specific topic configuration setting the property `auto.create.topics.enable` in the brokers will create the topics automatically when they are requested.
 
 With zookeeper up, the broker(s) running and the topic created we can now produce and consume messages. The easiest way to test this is using the console consumer and the console producer included in the Kafka binaries. To do so, the scripts  `scripts/start-cli-producer.sh` and `scripts/start-cli-consumer.sh` will do that getting the topic name as parameter. 
 
@@ -83,8 +84,31 @@ Topic:rt0	PartitionCount:3	ReplicationFactor:3	Configs:
 	Topic: rt0	Partition: 2	Leader: 1	Replicas: 1,2,0	Isr: 1,2,0
 ```
 
-### Java
+## Java
 
-### Hortonworks
+### Running the examples
+
+For most of the examples there are 2 versions, one Standalone and another that will required a zookeeper server up and the brokers subscribed. It is advisable to run a local zookeeper server and local brokers and the examples that run the server programatically are too verbose.
+
+### Producer
+
+
+To Send the messages the class `ProducerRecord` is used. There are several options showed below:
+
+```
+new ProducerRecord<String, String>(topic, msg);
+new ProducerRecord<String, String>(topic, key, msg);
+new ProducerRecord<String, String>(topic, partition, key, msg);
+```
+
+Besides the `topic` and the `msg`, which meaning is clear, the `key` serves as an extra layer of grouping messages and it can be null. The `partition` field allow to do the partitioning manually instead of using a partitioner. 
+
+### Consumer
+
+### Partitioner
+
+As with the rest of the classes, there are different partitioner interfaces for the old and the new version of kafka (`com.joseestudillo.kafka.old.OldPartitioner` and `com.joseestudillo.kafka.NewPartitioner`). However in order to use them in a producer the property `partitioner.class` must be setup with the canonical name of the partitioner class.
+
+## Hortonworks
 
 ## Code Examples

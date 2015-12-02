@@ -2,7 +2,9 @@ package com.joseestudillo.kafka;
 
 import java.io.IOException;
 
+import com.joseestudillo.kafka.consumer.NewConsumerFactory;
 import com.joseestudillo.kafka.consumer.NewConsumerTask;
+import com.joseestudillo.kafka.producer.NewProducerFactory;
 import com.joseestudillo.kafka.producer.NewProducerTask;
 
 public class ProdCon {
@@ -12,13 +14,13 @@ public class ProdCon {
 
 		String brokersCSV = "localhost:9092";
 
-		NewProducerTask producer = new NewProducerTask(brokersCSV, topic);
-		NewConsumerTask consumer = new NewConsumerTask(brokersCSV, "groupId", topic);
+		NewProducerTask producer = new NewProducerTask(NewProducerFactory.newInstance(brokersCSV), topic);
+		NewConsumerTask consumer = new NewConsumerTask(NewConsumerFactory.newInstance(brokersCSV, "groupId", topic));
 
 		new Thread(producer).start();
 		new Thread(consumer).start();
 
-		Thread.sleep(15000);
+		Thread.sleep(20000);
 
 		producer.stop();
 		consumer.stop();
